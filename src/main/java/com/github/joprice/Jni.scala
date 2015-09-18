@@ -35,6 +35,8 @@ object Jni {
 
     lazy val gccFlags = settingKey[Seq[String]]("Flags to be passed to gcc")
 
+    lazy val baseLibraryName = settingKey[Option[String]]("Base name of shared library produced by JNI (will be passed through System.mapLibraryName)")
+
     lazy val libraryName = settingKey[String]("Shared library produced by JNI")
 
     lazy val jreIncludes = settingKey[Seq[String]]("Includes for jni")
@@ -99,7 +101,8 @@ object Jni {
       val sources = jniSourceFiles.value.mkString(" ")
       val flags = gccFlags.value.mkString(" ")
       //TODO: .so for linux, .dylib for mac
-      val command = s"${nativeCompiler.value} $flags -o ${binPath.value}/${libraryName.value}.so $sources"
+      val outputFileName = if (baseLibraryName.value.isDefined) System.mapLibraryName(baseLibraryName.value.get) else libraryName.value + ".so"
+      val command = s"${nativeCompiler.value} $flags -o ${binPath.value}/$outputFileName $sources"
       log.info(command)
       Process(command, binPath.value) ! (log)
     }.dependsOn(javah)
