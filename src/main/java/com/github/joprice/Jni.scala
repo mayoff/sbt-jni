@@ -35,7 +35,7 @@ object Jni {
 
     lazy val gccFlags = settingKey[Seq[String]]("Flags to be passed to gcc")
 
-    lazy val baseLibraryName = settingKey[Option[String]]("Base name of shared library produced by JNI (will be passed through System.mapLibraryName)")
+    lazy val baseLibraryName = settingKey[String]("Base name of shared library produced by JNI (will be passed through System.mapLibraryName)")
 
     lazy val libraryName = settingKey[String]("Shared library produced by JNI")
 
@@ -93,6 +93,7 @@ object Jni {
     nativeSource := new File((sourceDirectory).value / "main",  "native"),
     cppExtensions := Seq(".c", ".cpp", ".cc", ".cxx"),
     jniSourceFiles := withExtensions((nativeSource.value ** "*").get, cppExtensions.value),
+    baseLibraryName := "",
     jniCompile := Def.task {
       val log = streams.value.log
       val mkBinDir = s"mkdir -p ${binPath.value}" 
@@ -101,7 +102,7 @@ object Jni {
       val sources = jniSourceFiles.value.mkString(" ")
       val flags = gccFlags.value.mkString(" ")
       //TODO: .so for linux, .dylib for mac
-      val outputFileName = if (baseLibraryName.value.isDefined) System.mapLibraryName(baseLibraryName.value.get) else libraryName.value + ".so"
+      val outputFileName = if (baseLibraryName.value == null || baseLibraryName.value.isEmpty) libraryName.value + ".so" else System.mapLibraryName(baseLibraryName.value)
       val command = s"${nativeCompiler.value} $flags -o ${binPath.value}/$outputFileName $sources"
       log.info(command)
       Process(command, binPath.value) ! (log)
