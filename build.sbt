@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   )
 )
 
-version := "0.1.0"
+version := "0.1.RGM1-SNAPSHOT"
 
 bintraySettings
 
